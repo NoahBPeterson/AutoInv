@@ -1,0 +1,12 @@
+name: AutoInventory
+main: io.AutoInventory.AutoInventory
+author: nbpe
+version: 1.0.0
+api: ["1.0.0"]
+description: AutoInventory for NukkitX
+commands:
+   dropwhenfull:
+      description: When a player's inventory is full, do mined blocks drop or destroy? Default is to destroy.
+      usage: /dropwhenfull
+      permission: AutoInventory.op
+      permission-message: You don't have <permission>
