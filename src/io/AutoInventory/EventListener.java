@@ -4,10 +4,8 @@ import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.EventPriority;
 import cn.nukkit.event.Listener;
 import cn.nukkit.event.block.BlockBreakEvent;
-import cn.nukkit.event.server.ServerCommandEvent;
 import cn.nukkit.inventory.PlayerInventory;
 import cn.nukkit.item.Item;
-import cn.nukkit.level.Level;
 
 /**
  * author: MagicDroidX
@@ -26,12 +24,14 @@ public class EventListener implements Listener {
 	{
 		dropwhenfull=setter;
 	}
+	
     
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = false) //DON'T FORGET THE ANNOTATION @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
     	//Check if player used a tool.
     	Item tool = event.getItem();
-
+  
+    	
     	if(isTool(tool)) {
     		
         	PlayerInventory inventoryAutoAdd = event.getPlayer().getInventory();
@@ -40,7 +40,8 @@ public class EventListener implements Listener {
     		
         	if(!dropwhenfull)
         	{
-        		event.setDrops(null);
+        		Item[] dropsNull = {new Item(0)};
+        		event.setDrops(dropsNull);
         	}
     		//event.setCancelled(); //We cancel so the block isn't dropped.
     	}else {
