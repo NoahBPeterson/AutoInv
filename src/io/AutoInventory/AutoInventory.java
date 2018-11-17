@@ -2,14 +2,10 @@ package io.AutoInventory;
 
 import cn.nukkit.command.Command;
 import cn.nukkit.command.CommandSender;
+import cn.nukkit.plugin.Plugin;
 import cn.nukkit.plugin.PluginBase;
-import cn.nukkit.utils.Config;
+import cn.nukkit.plugin.PluginManager;
 import cn.nukkit.utils.TextFormat;
-import cn.nukkit.utils.Utils;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.LinkedHashMap;
 
 /**
  * author: MagicDroidX
@@ -18,6 +14,7 @@ import java.util.LinkedHashMap;
 public class AutoInventory extends PluginBase {
 	private boolean dropwhenfull = false;
 	private EventListener autoI;
+
 	
     @Override
     public void onLoad() {
@@ -30,13 +27,17 @@ public class AutoInventory extends PluginBase {
 
 
         //Register the EventListener
-        autoI = new EventListener(this, dropwhenfull);
+    	PluginManager pm = this.getServer().getPluginManager();
+    	
+        autoI = new EventListener(this, dropwhenfull, pm);
         this.getServer().getPluginManager().registerEvents(autoI, this);
-
     }
+    
+
     
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+
     	if (cmd.getName().equalsIgnoreCase("dropwhenfull")) {
     		if(dropwhenfull)
     		{
@@ -51,7 +52,7 @@ public class AutoInventory extends PluginBase {
 
     @Override
     public void onDisable() {
-        this.getLogger().info(TextFormat.DARK_RED + "I've been disabled!");
+        this.getLogger().info(TextFormat.DARK_RED + "AutoInventory has been disabled!");
     }
 
 
