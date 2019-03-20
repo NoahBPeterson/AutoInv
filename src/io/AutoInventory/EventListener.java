@@ -2,6 +2,7 @@ package io.AutoInventory;
 
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
+import com.bekvon.bukkit.residence.protection.FlagPermissions;
 import com.bekvon.bukkit.residence.protection.ResidencePermissions;
 
 import cn.nukkit.Player;
@@ -42,8 +43,17 @@ public class EventListener implements Listener {
     {
     	Location loc = event.getBlock().getLocation();
     	ClaimedResidence res = Residence.getResidenceManager().getByLoc(loc);
-    	ResidencePermissions perms = (ResidencePermissions) Residence.getPermsByLocForPlayer(loc, event.getPlayer());
-    	if(perms.hasResidencePermission(event.getPlayer(), false))
+    	if(res==null)
+    	{
+    		return true;
+    	}
+    	ResidencePermissions perms = res.getPermissions();
+    	String playerName = event.getPlayer().getName();
+    	
+    	boolean hasPermission = perms.playerHas(playerName, "build", true);
+
+
+    	if(hasPermission)
     	{
     		return true;
     	}
