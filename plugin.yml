@@ -1,7 +1,7 @@
 name: AutoInventory
 main: io.AutoInventory.AutoInventory
 author: nbpe
-version: 1.0.2
+version: 1.0.4
 api: ["1.0.0"]
 description: AutoInventory for NukkitX
 softdepend: ["Residence"]

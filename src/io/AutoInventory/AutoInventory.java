@@ -2,9 +2,9 @@ package io.AutoInventory;
 
 import cn.nukkit.command.Command;
 import cn.nukkit.command.CommandSender;
-import cn.nukkit.plugin.Plugin;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.plugin.PluginManager;
+import cn.nukkit.utils.Config;
 import cn.nukkit.utils.TextFormat;
 
 /**
@@ -12,20 +12,30 @@ import cn.nukkit.utils.TextFormat;
  * NukkitExamplePlugin Project
  */
 public class AutoInventory extends PluginBase {
-	private boolean dropwhenfull = false;
+	private boolean dropwhenfull;
 	private EventListener autoI;
+	private Config configa;
 
 	
     @Override
     public void onLoad() {
         this.getLogger().info(TextFormat.WHITE + "AutoInventory has been loaded!");
+
     }
 
     @Override
     public void onEnable() {
         this.getLogger().info(TextFormat.DARK_GREEN + "AutoInventory has been enabled!");
 
+        configa = new Config(this.getDataFolder() + "/config.yml", Config.YAML);
 
+        if(!configa.isBoolean("DropWhenFull"))
+        {
+            configa.set("DropWhenFull", false);
+            configa.save();
+        }
+
+        dropwhenfull=configa.getBoolean("DropWhenFull");
         //Register the EventListener
     	PluginManager pm = this.getServer().getPluginManager();
     	
@@ -41,10 +51,15 @@ public class AutoInventory extends PluginBase {
     	if (cmd.getName().equalsIgnoreCase("dropwhenfull")) {
     		if(dropwhenfull)
     		{
-    			 autoI.setDropWhenFull(false);
+    			configa.set("DropWhenFull", false);
+    			dropwhenfull=configa.getBoolean("DropWhenFull");
+    			autoI.setDropWhenFull(false);
     		}else {
-   			 autoI.setDropWhenFull(true);
+    			configa.set("DropWhenFull", true);
+    			dropwhenfull=configa.getBoolean("DropWhenFull");
+    			autoI.setDropWhenFull(true);
     		}
+			configa.save();
     		return true;
     	} 
     	return false; 
@@ -53,6 +68,7 @@ public class AutoInventory extends PluginBase {
     @Override
     public void onDisable() {
         this.getLogger().info(TextFormat.DARK_RED + "AutoInventory has been disabled!");
+        configa.save();
     }
 
 

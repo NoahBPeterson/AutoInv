@@ -2,12 +2,8 @@ package io.AutoInventory;
 
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
-import com.bekvon.bukkit.residence.protection.FlagPermissions;
 import com.bekvon.bukkit.residence.protection.ResidencePermissions;
 
-import cn.nukkit.Player;
-import cn.nukkit.Server;
-import cn.nukkit.event.Event;
 import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.EventPriority;
 import cn.nukkit.event.Listener;
@@ -23,12 +19,10 @@ import cn.nukkit.plugin.PluginManager;
  * NukkitExamplePlugin Project
  */
 public class EventListener implements Listener {
-    private final AutoInventory plugin;
     private boolean dropwhenfull;
 	private PluginManager pm;
 
     public EventListener(AutoInventory plugin, boolean bool, PluginManager PM) {
-        this.plugin = plugin;
         dropwhenfull = bool;
         pm = PM;
     }
@@ -88,9 +82,7 @@ public class EventListener implements Listener {
         		
         		
         	}
-        	
 
-    		
         	if(!dropwhenfull)
         	{
         		Item[] dropsNull = {new Item(0)};
@@ -106,12 +98,14 @@ public class EventListener implements Listener {
 
     
     public boolean isTool(Item tool) {
-    	
+    	int fishingPole = Item.FISHING_ROD;
     	if(tool.isAxe()) {
     		return true;
     	}else if(tool.isPickaxe()) {
     		return true;
     	}else if(tool.isShovel()) {
+    		return true;
+    	}else if(tool.getId()==fishingPole){
     		return true;
     	}else {
     	return false;
