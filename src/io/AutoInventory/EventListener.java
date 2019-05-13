@@ -13,6 +13,8 @@ import cn.nukkit.item.Item;
 import cn.nukkit.level.Location;
 import cn.nukkit.plugin.Plugin;
 import cn.nukkit.plugin.PluginManager;
+import cn.nukkit.utils.MainLogger;
+import cn.nukkit.utils.TextFormat;
 
 /**
  * author: MagicDroidX
@@ -67,36 +69,66 @@ public class EventListener implements Listener {
         	Plugin plugin = pm.getPlugin("Residence");
 
         	PlayerInventory inventoryAutoAdd = event.getPlayer().getInventory();
+        	boolean isFull = false;
         	Item[] itemsToAdd = event.getDrops();
+        	
+        	if(dropwhenfull)
+        	{
+                MainLogger.getLogger().error("dropwhenfull=true");
+        	}else
+        	{
+                MainLogger.getLogger().error("dropwhenfull=false");
+
+        	}
+        	
+        	Item[] itemsToDrop = new Item[itemsToAdd.length];
+        	
+        	boolean ResidenceCanBreak = true;
+
         	if(!event.isCancelled())
         	{
         		if(plugin!=null) //Residence plugin is used, otherwise don't call functions that require it
         		{
-        			if(ResidenceCanBreak(event)) //and resident has perms
+        			if(!ResidenceCanBreak(event)) //and resident has perms
         			{
-                    	inventoryAutoAdd.addItem(itemsToAdd);
+        				ResidenceCanBreak  =  false;
         			}
-        		}else {
-                	inventoryAutoAdd.addItem(itemsToAdd);
         		}
-        		
-        		
-        	}
+        		if(ResidenceCanBreak)
+        		{
+    				int length = itemsToAdd.length;
+    				Item cursor;
+    				int itemDropCount = 0;
+    				for(int i = 0; i < length; i++) //Iterate through every possible drop
+    				{
+        				isFull=!inventoryAutoAdd.canAddItem(itemsToAdd[i]);
 
-        	if(!dropwhenfull)
-        	{
-        		Item[] dropsNull = {new Item(0)};
-        		event.setDrops(dropsNull);
+        				if(isFull)
+        				{
+            				MainLogger.getLogger().error("isFull");
+
+        				}else
+        				{
+            				MainLogger.getLogger().error("!isFull");
+        				}
+        				
+        				if(!isFull) //If the item can be added, add it and remove the block drop.
+        				{
+                        	inventoryAutoAdd.addItem(itemsToAdd[i]);
+                        	Item[] dropsNull = {new Item(0)};
+        					event.setDrops(dropsNull);
+        				}else if(isFull&&!dropwhenfull) //If the item cannot be added and the item should not drop, remove the block drop
+        				{
+        					Item[] dropsNull = {new Item(0)};
+        					event.setDrops(dropsNull);
+        				}
+    				}
+    			}	
         	}
-    		//event.setCancelled(); //We cancel so the block isn't dropped.
-    	}else {
-    		//return; //Otherwise, we don't do anything.
     	}
-
     }
     
 
-    
     public boolean isTool(Item tool) {
     	int fishingPole = Item.FISHING_ROD;
     	if(tool.isAxe()) {
