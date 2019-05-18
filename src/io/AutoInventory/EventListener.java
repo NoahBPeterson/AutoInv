@@ -72,15 +72,6 @@ public class EventListener implements Listener {
         	boolean isFull = false;
         	Item[] itemsToAdd = event.getDrops();
         	
-        	if(dropwhenfull)
-        	{
-                MainLogger.getLogger().error("dropwhenfull=true");
-        	}else
-        	{
-                MainLogger.getLogger().error("dropwhenfull=false");
-
-        	}
-        	
         	Item[] itemsToDrop = new Item[itemsToAdd.length];
         	
         	boolean ResidenceCanBreak = true;
@@ -102,15 +93,6 @@ public class EventListener implements Listener {
     				for(int i = 0; i < length; i++) //Iterate through every possible drop
     				{
         				isFull=!inventoryAutoAdd.canAddItem(itemsToAdd[i]);
-
-        				if(isFull)
-        				{
-            				MainLogger.getLogger().error("isFull");
-
-        				}else
-        				{
-            				MainLogger.getLogger().error("!isFull");
-        				}
         				
         				if(!isFull) //If the item can be added, add it and remove the block drop.
         				{
