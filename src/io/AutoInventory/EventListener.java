@@ -13,6 +13,7 @@ import cn.nukkit.item.Item;
 import cn.nukkit.level.Location;
 import cn.nukkit.plugin.Plugin;
 import cn.nukkit.plugin.PluginManager;
+import cn.nukkit.utils.Config;
 import cn.nukkit.utils.MainLogger;
 import cn.nukkit.utils.TextFormat;
 
@@ -55,6 +56,22 @@ public class EventListener implements Listener {
     	}
     	return false;
     }
+    
+    private boolean ProtectedWorldsCanBreak(BlockBreakEvent event)
+    {
+    	Config config;
+    	config = pm.getPlugin("ProtectedWorlds").getConfig();
+    	
+    	if (config.getStringList("worlds").contains(event.getBlock().getLevel().getName()) //This code snippet taken directly from PeterIM's plugin ProtectedWorlds
+    			&& !event.getPlayer().hasPermission("protectedworlds.bypass." + event.getPlayer().getLevel().getName().toLowerCase()) 
+    			&& !event.getPlayer().hasPermission("protectedworlds.bypassall") 
+    			&& config.getBoolean("noBlockBreaking"))
+    	{
+    		return false;
+    	}
+    	
+    	return true;
+    }
 	
     
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = false) //Set to lowest priority to work with SpawnProtect
@@ -66,7 +83,8 @@ public class EventListener implements Listener {
     	if(isTool(tool)) {
     		
     		
-        	Plugin plugin = pm.getPlugin("Residence");
+        	Plugin pluginResidence = pm.getPlugin("Residence");
+        	Plugin pluginProtectedWorlds = pm.getPlugin("Residence");
 
         	PlayerInventory inventoryAutoAdd = event.getPlayer().getInventory();
         	boolean isFull = false;
@@ -74,18 +92,26 @@ public class EventListener implements Listener {
         	
         	Item[] itemsToDrop = new Item[itemsToAdd.length];
         	
-        	boolean ResidenceCanBreak = true;
+        	boolean ResidenceCanBreak = true; //These are set true in case the plugin is not used.
+        	boolean ProtectedWorldsCanBreak = true; 
 
         	if(!event.isCancelled())
         	{
-        		if(plugin!=null) //Residence plugin is used, otherwise don't call functions that require it
+        		if(pluginResidence!=null) //Residence plugin is used, otherwise don't call functions that require it
         		{
         			if(!ResidenceCanBreak(event)) //and resident has perms
         			{
         				ResidenceCanBreak  =  false;
         			}
         		}
-        		if(ResidenceCanBreak)
+        		if(pluginProtectedWorlds!=null)
+        		{
+        			if(!ProtectedWorldsCanBreak(event))
+        			{
+        				ProtectedWorldsCanBreak = false;
+        			}
+        		}
+        		if(ResidenceCanBreak&&ProtectedWorldsCanBreak)
         		{
     				int length = itemsToAdd.length;
     				Item cursor;
