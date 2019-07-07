@@ -14,7 +14,8 @@ import cn.nukkit.utils.TextFormat;
 public class AutoInventory extends PluginBase {
 	private boolean dropwhenfull;
 	private EventListener autoI;
-	private Config configa;
+	private Config configServer;
+	private Config configPlayers;
 
 	
     @Override
@@ -27,15 +28,16 @@ public class AutoInventory extends PluginBase {
     public void onEnable() {
         this.getLogger().info(TextFormat.DARK_GREEN + "AutoInventory has been enabled!");
 
-        configa = new Config(this.getDataFolder() + "/config.yml", Config.YAML);
-
-        if(!configa.isBoolean("DropWhenFull"))
+        configServer = new Config(this.getDataFolder() + "/config.yml", Config.YAML);
+        
+        
+        if(!configServer.isBoolean("DropWhenFull"))
         {
-            configa.set("DropWhenFull", false);
-            configa.save();
+        	configServer.set("DropWhenFull", false);
+        	configServer.save();
         }
 
-        dropwhenfull=configa.getBoolean("DropWhenFull");
+        dropwhenfull=configServer.getBoolean("DropWhenFull");
         //Register the EventListener
     	PluginManager pm = this.getServer().getPluginManager();
     	
@@ -51,15 +53,15 @@ public class AutoInventory extends PluginBase {
     	if (cmd.getName().equalsIgnoreCase("dropwhenfull")) {
     		if(dropwhenfull)
     		{
-    			configa.set("DropWhenFull", false);
-    			dropwhenfull=configa.getBoolean("DropWhenFull");
+    			configServer.set("DropWhenFull", false);
+    			dropwhenfull=configServer.getBoolean("DropWhenFull");
     			autoI.setDropWhenFull(false);
     		}else {
-    			configa.set("DropWhenFull", true);
-    			dropwhenfull=configa.getBoolean("DropWhenFull");
+    			configServer.set("DropWhenFull", true);
+    			dropwhenfull=configServer.getBoolean("DropWhenFull");
     			autoI.setDropWhenFull(true);
     		}
-			configa.save();
+    		configServer.save();
     		return true;
     	} 
     	return false; 
@@ -68,7 +70,8 @@ public class AutoInventory extends PluginBase {
     @Override
     public void onDisable() {
         this.getLogger().info(TextFormat.DARK_RED + "AutoInventory has been disabled!");
-        configa.save();
+        configServer.save();
+        configPlayers.save();
     }
 
 
