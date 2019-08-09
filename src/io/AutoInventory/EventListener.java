@@ -1,13 +1,15 @@
 package io.AutoInventory;
 
-import com.bekvon.bukkit.residence.Residence;
+import cn.nukkit.Player;
+
+/*import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import com.bekvon.bukkit.residence.protection.ResidencePermissions;
 import com.massivecraft.factions.FLocation;
 import com.massivecraft.factions.Faction;
 import com.massivecraft.factions.Factions;
 import com.massivecraft.factions.*;
-import com.massivecraft.factions.listeners.*;
+import com.massivecraft.factions.listeners.*;*/
 
 import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.EventPriority;
@@ -21,139 +23,65 @@ import cn.nukkit.plugin.Plugin;
 import cn.nukkit.plugin.PluginManager;
 import cn.nukkit.utils.Config;
 
-/**
- * author: MagicDroidX
- * NukkitExamplePlugin Project
- */
 public class EventListener implements Listener {
-    private boolean dropwhenfull;
 	private PluginManager pm;
+	Config serverConfig;
+	Config playersConfig;
 
-    public EventListener(AutoInventory plugin, boolean bool, PluginManager PM) {
-        dropwhenfull = bool;
+    public EventListener(AutoInventory plugin, Config server, Config players, PluginManager PM) {
+    	serverConfig = server;
+    	playersConfig = players;
         pm = PM;
     }
-
-	public void setDropWhenFull(boolean setter)
-	{
-		dropwhenfull=setter;
-	}	
     
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = false) //Set to lowest priority to work with SpawnProtect
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = false) //Higher priority -> Runs later
     public void onBlockBreak(BlockBreakEvent event) {
-    	//Check if player used a tool.
-    	Item tool = event.getItem();
-  
-    	if(isTool(tool))
+    	Item tool = event.getItem(); //Check if player used a tool.
+    	boolean canBreak = canBreak(event);
+
+    	if(isTool(tool) && canBreak)
     	{
+        	boolean canAddItem = false;
+        	
         	PlayerInventory inventoryAutoAdd = event.getPlayer().getInventory();
-        	boolean isFull = false;
         	Item[] itemsToAdd = event.getDrops();
         	        	
-        	if(!event.isCancelled() && canBreak(event))
-        	{
-				int length = itemsToAdd.length;
-				for(int i = 0; i < length; i++) //Iterate through every possible drop
+			for(int i = 0; i < itemsToAdd.length; i++) //Iterate through every possible drop
+			{
+				canAddItem=inventoryAutoAdd.canAddItem(itemsToAdd[i]);
+				
+				if(canAddItem) //If the item can be added, add it and remove the block drop.
 				{
-    				isFull=!inventoryAutoAdd.canAddItem(itemsToAdd[i]);
-    				
-    				if(!isFull) //If the item can be added, add it and remove the block drop.
-    				{
-                    	inventoryAutoAdd.addItem(itemsToAdd[i]);
-                    	//event.setCancelled();
-                    	Item[] dropsNull = {new Item(0)};
-    					event.setDrops(dropsNull);
-    				}else if(isFull&&!dropwhenfull) //If the item cannot be added and the item should not drop, remove the block drop
-    				{
-    					//event.setCancelled();
-    					Item[] dropsNull = {new Item(0)};
-    					event.setDrops(dropsNull);
-    				}
+                	inventoryAutoAdd.addItem(itemsToAdd[i]);
+                	Item[] dropsNull = {new Item(0)};
+					event.setDrops(dropsNull);
+				}else if(!dropWhenFull()) //If the item cannot be added and the item should not drop, remove the block drop
+				{
+					Item[] dropsNull = {new Item(0)};
+					event.setDrops(dropsNull);
 				}
-        	}
+			}
     	}
+    }
+    
+    boolean dropWhenFull()
+    {
+    	return serverConfig.getBoolean("DropWhenFull", true);
     }
     
     boolean canBreak(BlockBreakEvent event)
     {
-    	Plugin pluginResidence = pm.getPlugin("Residence");
-    	Plugin pluginProtectedWorlds = pm.getPlugin("ProtectedWorlds");
-    	Plugin pluginFactions = pm.getPlugin("Factions");
-    	
-    	boolean residenceCanBreak = true;
-    	boolean protectedCanBreak = true;
-    	boolean factionsCanBreak = true; 
-    	
-		if(pluginResidence!=null) //Residence plugin is used, otherwise don't call functions that require it
-		{
-			if(!ResidenceCanBreak(event)) //and resident has perms
-			{
-				residenceCanBreak = false;
-			}
-		}
-		if(pluginProtectedWorlds!=null)
-		{
-			if(!ProtectedWorldsCanBreak(event))
-			{
-				protectedCanBreak = false;
-			}
-		}
-		if(pluginFactions!=null)
-		{
-			if(!FactionsCanBreak(event))
-			{
-				factionsCanBreak=false;
-			}
-		}
-		
-		return (residenceCanBreak && protectedCanBreak && factionsCanBreak);
-    }
-    
-    private boolean ResidenceCanBreak(BlockBreakEvent event)
-    {
-    	Location loc = event.getBlock().getLocation();
-    	ClaimedResidence res = Residence.getResidenceManager().getByLoc(loc);
-    	if(res==null)
+    	boolean playerChoice = playersConfig.getBoolean(event.getPlayer().getName(), true);
+    	boolean allChoice = serverConfig.getBoolean("All", true);
+    	boolean canChoose = serverConfig.getBoolean("CanChoose", true);
+    	if(!canChoose)
     	{
-    		return true;
-    	}
-    	ResidencePermissions perms = res.getPermissions();
-    	String playerName = event.getPlayer().getName();
-    	
-    	boolean hasPermission = perms.playerHas(playerName, "build", true);
-
-
-    	if(hasPermission)
+    		return allChoice;
+    	}else
     	{
-    		return true;
+    		return playerChoice;
     	}
-    	return false;
-    }
-    
-    private boolean ProtectedWorldsCanBreak(BlockBreakEvent event)
-    {
-    	Config config;
-    	config = pm.getPlugin("ProtectedWorlds").getConfig();
-    			
-    	
-    	if (config.getStringList("worlds").contains(event.getBlock().getLevel().getName()) //This code snippet taken directly from PeterIM's plugin ProtectedWorlds
-    			&& !event.getPlayer().hasPermission("protectedworlds.bypass." + event.getPlayer().getLevel().getName().toLowerCase()) 
-    			&& !event.getPlayer().hasPermission("protectedworlds.bypassall") 
-    			&& config.getBoolean("noBlockBreaking"))
-    	{
-    		return false;
-    	}
-    	
-    	return true;
-    }
-    
-    private boolean FactionsCanBreak(BlockBreakEvent event)
-    {    	
-    	Location location = new Location(event.getBlock().getFloorX(), event.getBlock().getFloorY(), event.getBlock().getFloorZ(), 0, 0, event.getBlock().getLevel());    	
-    	boolean canBreak =  FactionsBlockListener.playerCanBuildDestroyBlock(event.getPlayer(), location, "destroy", true);
-    	return canBreak;
-    }
-    
+    }    
 
     public boolean isTool(Item tool) {
     	if(tool.isAxe()) {

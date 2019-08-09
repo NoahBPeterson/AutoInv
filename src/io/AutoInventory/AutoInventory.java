@@ -2,17 +2,13 @@ package io.AutoInventory;
 
 import cn.nukkit.command.Command;
 import cn.nukkit.command.CommandSender;
+import cn.nukkit.permission.Permission;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.plugin.PluginManager;
 import cn.nukkit.utils.Config;
 import cn.nukkit.utils.TextFormat;
 
-/**
- * author: MagicDroidX
- * NukkitExamplePlugin Project
- */
 public class AutoInventory extends PluginBase {
-	private boolean dropwhenfull;
 	private EventListener autoI;
 	private Config configServer;
 	private Config configPlayers;
@@ -29,41 +25,73 @@ public class AutoInventory extends PluginBase {
         this.getLogger().info(TextFormat.DARK_GREEN + "AutoInventory has been enabled!");
 
         configServer = new Config(this.getDataFolder() + "/config.yml", Config.YAML);
-        
+        configPlayers = new Config(this.getDataFolder() + "/playerPreference.yml", Config.YAML);
         
         if(!configServer.isBoolean("DropWhenFull"))
         {
-        	configServer.set("DropWhenFull", false);
+        	configServer.set("DropWhenFull", true);
+        	configServer.set("CanChoose", true);
+        	configServer.set("All", true);
         	configServer.save();
         }
 
-        dropwhenfull=configServer.getBoolean("DropWhenFull");
         //Register the EventListener
     	PluginManager pm = this.getServer().getPluginManager();
     	
-        autoI = new EventListener(this, dropwhenfull, pm);
+        autoI = new EventListener(this, configServer, configPlayers, pm);
         this.getServer().getPluginManager().registerEvents(autoI, this);
     }
     
-
-    
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) 
+    {
     	if (cmd.getName().equalsIgnoreCase("dropwhenfull")) {
-    		if(dropwhenfull)
-    		{
-    			configServer.set("DropWhenFull", false);
-    			dropwhenfull=configServer.getBoolean("DropWhenFull");
-    			autoI.setDropWhenFull(false);
-    		}else {
-    			configServer.set("DropWhenFull", true);
-    			dropwhenfull=configServer.getBoolean("DropWhenFull");
-    			autoI.setDropWhenFull(true);
-    		}
+			boolean dropWhenInventoryFull = configServer.getBoolean("DropWhenFull", true);
+			configServer.set("DropWhenFull", !dropWhenInventoryFull);
+			dropWhenInventoryFull = configServer.getBoolean("DropWhenFull");
+
+			String OnOff = dropWhenInventoryFull ? "dropped" : "destroyed";
+			sender.sendMessage("Items are "+OnOff+" when the player's inventory is full and AutoInv is on.");
     		configServer.save();
+    		configServer.reload();
     		return true;
-    	} 
+    	} else if(cmd.getName().equalsIgnoreCase("autoinventory")&& sender.hasPermission(Permission.DEFAULT_OP))
+    	{
+    		if(args.length==0) return false;
+    		if(args[0].toLowerCase().contains("canchoose"))
+    		{
+    			boolean canChoose = configServer.getBoolean("CanChoose", true);
+    			configServer.set("CanChoose", !canChoose);
+    			canChoose = configServer.getBoolean("CanChoose");
+
+    			String negation = canChoose ? "" : "not ";
+    			sender.sendMessage("Players can "+negation+"choose to toggle now.");
+    		}else if(args[0].toLowerCase().equals("all"))
+			{
+    			boolean all = configServer.getBoolean("All", true);
+    			configServer.set("All", !all);
+    			all = configServer.getBoolean("All");
+    			String OnOff = all ? "on" : "off";
+    			sender.sendMessage("AutoInventory is now "+OnOff+" for everyone.");
+			}else {
+				sender.sendMessage("Usage: /AutoInventory CanChoose");
+				sender.sendMessage("Usage: /AutoInventory All");
+				return false;
+			}
+    		configServer.save();
+    		configServer.reload();
+    		return true;
+    	} else if(cmd.getName().equalsIgnoreCase("autoinv"))
+    	{
+			boolean autoInvPlayer = configPlayers.getBoolean(sender.getName(), true);
+			configPlayers.set(sender.getName(), !autoInvPlayer);
+			autoInvPlayer = configPlayers.getBoolean(sender.getName());
+			String OnOff = autoInvPlayer ? "on" : "off";
+			sender.sendMessage("You have turned AutoInventory "+OnOff+".");
+			configPlayers.save();
+    		configPlayers.reload();
+			return true;
+    	}
     	return false; 
     }
 

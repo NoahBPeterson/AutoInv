@@ -1,13 +1,18 @@
 name: AutoInventory
 main: io.AutoInventory.AutoInventory
 author: nbpe
-version: 1.0.8
+version: 1.1.0
 api: ["1.0.0"]
 description: AutoInventory for NukkitX
-softdepend: ["Residence"]
 commands:
    dropwhenfull:
       description: When a player's inventory is full, do mined blocks drop or destroy? Default is to drop.
-      usage: /dropwhenfull
+      usage: "/dropwhenfull"
       permission: AutoInventory.op
       permission-message: You don't have <permission>
+   autoinventory:
+      description: Choose if players can toggle AutoInv [CanChoose], and toggle it for the server [All].
+      usage: "/autoinventory [CanChoose/All]"
+   autoinv:
+      description: Allow players to toggle AutoInventory for themselves.
+      usage: "/autoinv"
