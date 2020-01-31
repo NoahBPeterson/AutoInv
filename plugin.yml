@@ -1,8 +1,8 @@
 name: AutoInventory
 main: io.AutoInventory.AutoInventory
 author: nbpe
-version: 1.1.0
-api: ["1.0.0"]
+version: 1.2.0
+api: ["1.0.9"]
 description: AutoInventory for NukkitX
 commands:
    dropwhenfull:
@@ -13,6 +13,8 @@ commands:
    autoinventory:
       description: Choose if players can toggle AutoInv [CanChoose], and toggle it for the server [All].
       usage: "/autoinventory [CanChoose/All]"
+      permission: AutoInventory.op
+      permission-message: You don't have <permission>
    autoinv:
       description: Allow players to toggle AutoInventory for themselves.
       usage: "/autoinv"

@@ -1,5 +1,6 @@
 package io.AutoInventory;
 
+
 import cn.nukkit.command.Command;
 import cn.nukkit.command.CommandSender;
 import cn.nukkit.permission.Permission;
@@ -7,11 +8,16 @@ import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.plugin.PluginManager;
 import cn.nukkit.utils.Config;
 import cn.nukkit.utils.TextFormat;
+import io.AutoInventory.Commands.AutoInvCommand;
+import io.AutoInventory.Commands.AutoInventoryCommand;
+import io.AutoInventory.Commands.DropWhenFullCommand;
 
 public class AutoInventory extends PluginBase {
 	private EventListener autoI;
-	private Config configServer;
-	private Config configPlayers;
+	public Config configServer;
+	public Config configPlayers;
+	
+	public static AutoInventory plugin;
 
 	
     @Override
@@ -23,6 +29,10 @@ public class AutoInventory extends PluginBase {
     @Override
     public void onEnable() {
         this.getLogger().info(TextFormat.DARK_GREEN + "AutoInventory has been enabled!");
+        plugin = this;
+        this.getServer().getCommandMap().register("AutoInv", (Command)new AutoInvCommand("autoInv", this));
+        this.getServer().getCommandMap().register("AutoInventory", (Command)new AutoInventoryCommand("autoInventory", this));
+        this.getServer().getCommandMap().register("DropWhenFull", (Command)new DropWhenFullCommand("dropWhenFull", this));
 
         configServer = new Config(this.getDataFolder() + "/config.yml", Config.YAML);
         configPlayers = new Config(this.getDataFolder() + "/playerPreference.yml", Config.YAML);
@@ -100,6 +110,11 @@ public class AutoInventory extends PluginBase {
         this.getLogger().info(TextFormat.DARK_RED + "AutoInventory has been disabled!");
         configServer.save();
         configPlayers.save();
+        plugin = null;
+        this.getServer().getCommandMap().getCommands().remove("AutoInv");
+        this.getServer().getCommandMap().getCommands().remove("AutoInventory");
+        this.getServer().getCommandMap().getCommands().remove("DropWhenFull");
+
     }
 
 
