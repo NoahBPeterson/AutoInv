@@ -18,7 +18,7 @@ public class EventListener implements Listener {
     	playersConfig = players;
     }
     
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false) //Higher priority -> Runs later
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true) //Higher priority -> Runs later
     public void onBlockBreak(BlockBreakEvent event) {
     	Item tool = event.getItem(); //Check if player used a tool.
     	boolean canBreak = canBreak(event);
